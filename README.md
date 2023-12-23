@@ -109,3 +109,102 @@ PizzaStore에서 사용하는 Pizza 객체(예를 들면, NYStyleCheesePizza클�
     ```
 - 연관된 제품을 하나로(제품군으로) 묶을 수 있는 장점이 있다.
 - 새로운 제품을 추가하려면 인터페이스를 변경해야하는 단점이 있다.
+
+## Chapter05 - 싱글턴 패턴(singleton pattern)
+싱글턴 패턴(Singleton Pattern)은 클래스 인스턴스를 하나만 만들고, 그 인스턴스로의 전역 접근을 제공한다.  
+- 싱글턴 패턴을 실제로 적용할 때는 클래스에서 하나뿐인 인스턴스를 관리하도록 만들면 된다.  
+- 그리고 다른 어떤 클래스에서도 자신의 인스턴스를 추가로 만들지 못하게 해야 한다.  
+- 어디서든 그 인스턴스에 접근할 수 있도록 전역 접근 지점을 제공한다.
+- Lazyinstantitaion(게으른 방식의 인스턴스 생성)으로 생성되도록 구현할 수도 있다. 이떄 자원을 많이 잡아먹는 인스턴스에 효과적이다.
+
+### 싱글턴 구현 방법
+#### 고전적인 방법(사용하면 안됨)
+```java
+public class Singleton {
+    private static Singleton uniqueInstance;
+    
+    private Singleton() {}
+
+  public static Singleton getInstance() {
+    if (uniqueInstance == null) {
+      uniqueInstance = new Singleton();
+    }
+    return uniqueInstance;
+  }
+}
+```
+
+#### 멀티스레딩 문제를 해결한 구현 방법
+##### 1. getInstance()를 동기화하는 방법(성능이 100배 저하)
+```java
+public class Singleton {
+    private static Singleton uniqueInstance;
+    
+    private Singleton() {}
+
+  public static synchronized Singleton getInstance() {
+    if (uniqueInstance == null) {
+      uniqueInstance = new Singleton();
+    }
+    return uniqueInstance;
+  } 
+}
+```
+
+##### 2. 처음부터 만드는 방법
+```java
+public class Singleton {
+    private static Singleton uniqueInstance = new Singleton();
+    
+    private Singleton() {}
+
+  public static synchronized Singleton getInstance() {
+    return uniqueInstance;
+  } 
+}
+```
+
+##### 3. DCL(Double-Checked Locking)을 써서 getInstance()에서 동기화되는 부분을 줄이는 방법
+```java
+public class Singleton {
+    private volatile static Singleton uniqueInstance;
+    
+    private Singleton() {}
+
+  public static synchronized Singleton getInstance() {
+    if (uniqueInstance == null) {
+      synchronized (Singleton.class) {
+        if (uniqueInstance == null) {
+          uniqueInstance = new Singleton();
+        }
+      }
+    }
+    return uniqueInstance;
+  } 
+}
+```
+
+#### 어떤 방법을 쓰는게 맞을까?
+1. getInstance()의 속도가 그리 중요하지 않다면? 그냥 둔다(동기화하는 방법을 사용)
+2. 애플리케이션에서 Singleton의 인스턴스를 생성하고 계속 사용하거나, 실행 중에 수시로 만들고 관리가 성가시면 처음부터 생성한다.
+3. DCL: 인스턴스가 생성되어 있는지 확인한 다음 생성되어 있지 않았을 때만 동기화하고, 나중엔 동기화하지 않아도 된다. (Java 1.4 이전은 사용 불가)
+
+#### 싱글턴의 문제점
+- 클래스 로링 문제 : 클래스 로더마다 서로 다른 네임스페이스를 정의하기에 클래스 로더가 2개 이상이면 각 클래스 로더마다 한 번씩 로딩할 수도 있다.
+- 리플렉션, 직렬화, 역직렬화 문제
+- 느슨한 결합 원칙에 위배
+- 서브클래스를 만들면 모든 서브클래스가 똑같은 인스턴스 변수를 공유해서 부작용 발생이 높다.
+
+### 결론: Enum을 사용하자
+```java
+public enum Singleton {
+    UNIQUE_INSTANCE;
+}
+
+public class SingletonClient {
+  public static void main(String[] args) {
+    Singleton singleton = Singleton.UNIQUE_INSTANCE;
+  }
+}
+```
+- Enum을 사용하면 동기화 문제, 클래스 로딩 문제, 리플렉션, 직렬화와 역직렬화 문제를 해결할 수 있다!  
