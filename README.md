@@ -1,6 +1,7 @@
 # 목차
 
 --- 
+
 > 1. [전략 패턴](#Chapter01---전략 패턴(strategy-pattern))
 > 1. [옵저버 패턴](#Chapter02---옵저버-패턴(observer-pattern))
 > 1. [데코레이터 패턴](#Chapter03---데코레이터-패턴(decorator-pattern))
@@ -17,6 +18,39 @@
 > 2. 디자인 원칙: 구현보다 인터페이스에 맞춰서 프로그래밍한다. (위임할 객체에게 맡기면 구체적으로 구현하지 않아도 된다.)
 > 3. 디자인 원칙: 상속보다는 구성을 활용한다. (행동을 상속받는 대신 올바른 객체로 *구성*되게 한다.)  
   
+- **"인터페이스에 맞춰서 프로그래밍한다"라는 말은 "상위 형식에 맞춰서 프로그래밍한다"라는 말이다.**
+- 오리 클래스에는 행동을 **상속**받는 대신, 올바른 행동 객체로 **구성**되어 행동을 부여받는다.
+  - 실행 시 행동을 동적으로 바꿀 수 있게되는 장점이 있다.
+```mermaid
+classDiagram
+    MallardDuck --|> Duck
+    RedheadDuck --|> Duck
+    RubberDuck --|> Duck
+    Duck --> FlyBehavior
+    Duck --> QuackBehavior
+    FlyWithWings ..|> FlyBehavior
+    FlyNoWay ..|> FlyBehavior
+    Quack ..|> QuackBehavior
+    Squeak ..|> QuackBehavior
+    class Duck{
+        <<abstract>>
+        FlyBehavior flyBehavior
+        QuackBehavior quackBehavior
+        performQuack()
+        performFly()
+        swim()
+        display()
+    }
+    class FlyBehavior{
+        <<interface>>
+        +fly()
+    }
+    class QuackBehavior{
+        <<interface>>
+        +quack()
+    }
+```
+
 고민할 거리: 상속에는 상속 나름대로 문제가 있으며, 상속 외에도 재사용을 이룰 수 있는 여러 방법들이 있다.  
 훌륭한 객체지향 디자인에는 재사용성, 확장성, 관리용이성이 있다.  
 대부분의 패턴과 원칙은 소프트웨어 변경 문제와 연관되어 있다.  
@@ -31,11 +65,28 @@
 핵심 정리  
 * subjects는 동일한 인터페이스를 써서 옵저버에게 연락한다.
 * Observer 인터페이스를 구현하기만 하면 어떤 구상 클래스의 옵저버라도 패턴에 참여할 수 있다.
-* subjects는 옵저버들이 Observer 인터페이스를 구현한다는 것을 제외하면 옵저버에 관해 전혀 모른다. -> 느슨한 결함
+* subjects는 옵저버들이 Observer 인터페이스를 구현한다는 것을 제외하면 옵저버에 관해 전혀 모른다. -> 느슨한 결합
 * 옵저버 패턴을 사용하면 subjects가 데이터를 보내거나(push) 옵저버가 데이터를 가져올 (pull)수 있다.
+  * push 보다 pull을 사용하는게 대체로 더 좋다. (subjects가 확장될 때마다 getter만 추가하고, 필요한 데이터만 가져올 수 있도록 하면 된다.)
 * 자바빈도 옵저버 패턴을 많이 사용한다.
 * 옵저버 패턴은 여러 개의 주제와 메시지 유형이 있는 출판-구독 패턴과 친척이다.
 * 옵저버 패턴은 자주 쓰이는 패턴으로 MVC 패턴에서 다시 나온다.
+```mermaid
+classDiagram
+    Subject --> Observer : "옵저버"
+    ConcreteSubject ..|> Subject : "구현"
+    ConcreteObserver ..|> Observer : "구현"
+    class Subject{
+        <<interface>>
+        registerObserver()
+        removeObserver()
+        notifyObserver()
+    }
+    class Observer{
+        <<interface>>
+        update()
+    }
+```
 
 ---
 
@@ -46,6 +97,38 @@
 
 데코레이터 패턴을 사용하면 자잘한 객체가 매우 많이 추가될 수 있고, 데코레이터를 너무 많이 사용하면 코드가 필요 이상으로 복잡해진다.  
 구성 요소의 클라이언트는 데코레이터의 존재를 알 수 없다. 단, 클라이언트가 구성 요소의 구체적인 형식에 의존하는 경우는 예외다.  
+
+```mermaid
+classDiagram
+    class Component {
+        methodA()
+        methodB()
+    }
+    class ConcreteComponent {
+        methodA()
+        methodB()
+    }
+    class Decorator {
+        Component wrappedObj
+        methodA()
+        methodB()
+    }
+    class ConcreteDecoratorA {
+        methodA()
+        methodB()
+        newBehavior()
+    }
+    class ConcreteDecoratorB {
+        Object newState
+        methodA()
+        methodB()
+    }
+    ConcreteComponent --|> Component
+    Decorator --|> Component
+    ConcreteDecoratorA --|> Decorator
+    ConcreteDecoratorB --|> Decorator
+    Decorator ..> Component : 구성 요소
+```
 
 ---
 
@@ -61,6 +144,19 @@ abstract Product factoryMethod(String type)
 - factoryMethod: 팩토리 메서드는 클라이언트(슈퍼 클래스에 있는 orderPizze() 같은 코드)에서 실제로 생성되는 구상 객체가 무엇인지 알 수 없게 만든다.
 - Params(String type): 팩토리 메서드를 만들 때 매개변수로 만들 객체 종류를 선택할 수도 있다.
 - 핵심: 팩토리 메서드는 피자 객체를 만드는 방법을 캡슐화한다.
+```mermaid
+classDiagram
+    Product <|-- ConcreteCreator
+    ConcreteCreator --|> Creator
+    class Creator {
+        <<interface>>
+        factoryMethod()*
+        anOperation()
+    }
+    class ConcreteCreator {
+        factoryMethod()
+    }
+```
 ### 팩토리 메서드 패턴의 정의
 > 팩토리 메서드 패턴(Factory Method Pattern)에서는 객체를 생성할 때 필요한 인터페이스를 만든다.  
 > 어떤 클래스의 인스턴스를 만들지는 서브클래스에서 결정한다.  
@@ -95,6 +191,39 @@ PizzaStore에서 사용하는 Pizza 객체(예를 들면, NYStyleCheesePizza클�
 추상 팩토리 패턴을 사용하면 클라이언트에서 추상 인터페이스로 일련의 제품을 공급받을 수 있다.  
 이때, 실제로 어떤 제품이 생산되는지는 전혀 알 필요가 없다.  
 따라서 클라이언트와 팩토리에서 생산되는 제품을 분리할 수 있다.  
+
+```mermaid
+classDiagram
+    class AbstractFactory {
+        <<interface>>
+        createProductA()*
+        createProductB()*
+    }
+    class ConcreteFactory1 {
+        createProductA()
+        createProductB()
+    }
+    class ConcreteFactory2 {
+        createProductA()
+        createProductB()
+    }
+    class AbstractProductA {
+        <<interface>>
+    }
+    class AbstractProductB {
+        <<interface>>
+    }
+    ConcreteFactory1 ..|> AbstractFactory: 구현
+    ConcreteFactory2 ..|> AbstractFactory: 구현
+    ProductA1 ..|> AbstractProductA
+    ProductA2 ..|> AbstractProductA
+    ProductB1 ..|> AbstractProductB
+    ProductB2 ..|> AbstractProductB
+    ConcreteFactory1 --|> ProductA1: 각 팩토리에서 서로 다른 제품군을 구현한다.
+    ConcreteFactory1 --|> ProductA2: 각 팩토리에서 서로 다른 제품군을 구현한다.
+    ConcreteFactory2 --|> ProductB1: 각 팩토리에서 서로 다른 제품군을 구현한다.
+    ConcreteFactory2 --|> ProductB2: 각 팩토리에서 서로 다른 제품군을 구현한다.
+```
 
 ### 팩토리 메서드 패턴과 추상 팩토리 패턴의 공통점과 차이점
 #### 공통점
@@ -240,11 +369,11 @@ public class SingletonClient {
 ```mermaid
 classDiagram
     
-    Client --> Invoker
-    Client --> Receiver
-    Client --> ConcreteCommand
-    Invoker --> Command
-    ConcreteCommand --> Receiver
+    Client --|> Invoker
+    Client --|> Receiver
+    Client --|> ConcreteCommand
+    Invoker --|> Command
+    ConcreteCommand --|> Receiver
     ConcreteCommand ..|> Command : implements
     note for Client "클라이언트는 ConcreteCommand를 생성하고 Receiver를 설정한다"
     note for Invoker "인보커에는 명령이 들어있고, execute() 메서드를 호출함으로써
