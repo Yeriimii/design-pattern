@@ -1,4 +1,15 @@
 # 목차
+
+--- 
+> 1. [전략 패턴](#Chapter01---전략 패턴(strategy-pattern))
+> 1. [옵저버 패턴](#Chapter02---옵저버-패턴(observer-pattern))
+> 1. [데코레이터 패턴](#Chapter03---데코레이터-패턴(decorator-pattern))
+> 1. [팩토리 패턴](#Chapter04---팩토리-패턴(factory-pattern))
+> 1. [싱글턴 패턴](#Chapter05---싱글턴-패턴(singleton-pattern))
+> 1. [커맨드 패턴](#Chapter06---커맨드-패턴(command-pattern))
+
+---
+
 ## Chapter01 - 전략 패턴(strategy pattern)
 전략 패턴(strategy pattern)은 알고리즘군을 정의하고 캡슐화해서 각각의 알고리즘군을 수정해서 쓸 수 있게 해준다.  
 전략 패턴을 사용하면 클라이언트로부터 알고리즘을 분리해서 독립적으로 변경할 수 있다.  
@@ -9,6 +20,8 @@
 고민할 거리: 상속에는 상속 나름대로 문제가 있으며, 상속 외에도 재사용을 이룰 수 있는 여러 방법들이 있다.  
 훌륭한 객체지향 디자인에는 재사용성, 확장성, 관리용이성이 있다.  
 대부분의 패턴과 원칙은 소프트웨어 변경 문제와 연관되어 있다.  
+
+---
 
 ## Chapter02 - 옵저버 패턴(observer pattern)
 옵저버 패턴(observer pattern)은 한 객체의 상태가 바뀌면 그 객체에 의존하는 다른 객체에게 연락이 가고  
@@ -24,6 +37,8 @@
 * 옵저버 패턴은 여러 개의 주제와 메시지 유형이 있는 출판-구독 패턴과 친척이다.
 * 옵저버 패턴은 자주 쓰이는 패턴으로 MVC 패턴에서 다시 나온다.
 
+---
+
 ## Chapter03 - 데코레이터 패턴(decorator pattern)
 데코레이터 패턴(decorator pattern)으로 객체에 추가 요소를 동적으로 더할 수 있다.  
 데코레이터를 사용하면 서브클래스를 만들 떄 보다 훨씬 유연하게 기능을 확장할 수 있다.  
@@ -31,6 +46,8 @@
 
 데코레이터 패턴을 사용하면 자잘한 객체가 매우 많이 추가될 수 있고, 데코레이터를 너무 많이 사용하면 코드가 필요 이상으로 복잡해진다.  
 구성 요소의 클라이언트는 데코레이터의 존재를 알 수 없다. 단, 클라이언트가 구성 요소의 구체적인 형식에 의존하는 경우는 예외다.  
+
+---
 
 ## Chapter04 - 팩토리 패턴(factory pattern)
 - 간단한 팩토리(Simple Factory)는 디자인 패턴이라기 보다는 프로그래밍에서 자주 쓰이는 **관용구**에 가깝다.
@@ -109,6 +126,8 @@ PizzaStore에서 사용하는 Pizza 객체(예를 들면, NYStyleCheesePizza클�
     ```
 - 연관된 제품을 하나로(제품군으로) 묶을 수 있는 장점이 있다.
 - 새로운 제품을 추가하려면 인터페이스를 변경해야하는 단점이 있다.
+
+---
 
 ## Chapter05 - 싱글턴 패턴(singleton pattern)
 싱글턴 패턴(Singleton Pattern)은 클래스 인스턴스를 하나만 만들고, 그 인스턴스로의 전역 접근을 제공한다.  
@@ -208,3 +227,62 @@ public class SingletonClient {
 }
 ```
 - Enum을 사용하면 동기화 문제, 클래스 로딩 문제, 리플렉션, 직렬화와 역직렬화 문제를 해결할 수 있다!  
+
+---
+
+## Chapter06 - 커맨드 패턴(command pattern)
+커맨드 패턴(Command Pattern)을 사용하면 요청 내역을 객체로 캡술화해서 객체를 서로 다른 요청 내역에 따라 매개변수화 할 수 있다.  
+이러면 요청을 큐에 저장하거나 로그로 기록하거나 작업 취소 기능을 사용할 수 있다.  
+  
+밖에서 볼 때는 어떤 객체가 리시버 역할을 하는지, 그 리시버가 어떤 일을 하는지 알 수 없다.  
+그냥 `execute()` 메서드를 호출하면 해당 요청이 처리된다는 사실만 알 수 있다.  
+
+```mermaid
+classDiagram
+    
+    Client --> Invoker
+    Client --> Receiver
+    Client --> ConcreteCommand
+    Invoker --> Command
+    ConcreteCommand --> Receiver
+    ConcreteCommand ..|> Command : implements
+    note for Client "클라이언트는 ConcreteCommand를 생성하고 Receiver를 설정한다"
+    note for Invoker "인보커에는 명령이 들어있고, execute() 메서드를 호출함으로써
+    커맨드 객체에게 특정 작업을 수행해달라는 요구를 하게 한다"
+    note for Receiver "리시버는 요구 사항을 수행할 때 어떤 일을 처리해야하 하는지 알고 있는 객체다"
+    note for ConcreteCommand "ConcreteCommand는 특정 행동과 리시버를 연결해준다.
+    인보커에서 execute() 호출로 요청하면 ConcreteCommand 객체에서
+    리시버에 있는 메서드를 호출해서 그 작업을 처리한다"
+    note for Command "Command는 모든 커맨드 객체에서 구현해야 하는 인터페이스다.
+    모든 명령은 execute() 메서드 호출로 수행되며,
+    이 메서드는 리시버에 특정 작업을 처리하라는 지시를 전달한다."
+    class Client
+    class Invoker{
+        Command command
+        setCommand()
+    }
+    class Command{
+      <<interface>>
+      execute()
+      undo()
+    }
+    class Receiver{
+        action()
+    }
+    class ConcreteCommand{
+        execute()
+        undo()
+    }
+```
+- 작업 취소를 할 때 히스토리 기능의 구현 방법(UNDO 버튼을 여러 번 누를 수 있도록 하는 방법)
+  -  전에 실행한 커맨드 자체를 스택에 넣고, UNDO 버튼을 누를 때마다 인보커에서 스택 맨 위에 있는 항목을 꺼내서 `undo()` 메서드를 호출하면 된다.
+### 핵심정리
+> - 커맨드 패턴을 사용하면 요청하는 객체와 요청을 수행하는 객체를 분리할 수 있다.
+> - 분리하는 과정의 중심에 커맨드 객체가 있으며, 이 객체가 행동이 들어있는 리시버를 캡술화한다.
+> - 인보커는 무언가 요청을 할 때 커맨드 객체의 `execute()` 메서드를 호출하면 된다. `execute()` 메서드는 리시버에 있는 행동을 호출한다.
+> - 커맨드는 인보커를 매개변수화 할 수 있다. 실행 중에 동적으로 매개변수화를 설정할 수도 있다.
+> - `execute()` 메서드가 마지막으로 호출되기 전의 상태로 되돌리는 작업 취소 메서드를 구현하면 커맨드 패턴으로 작업 취소 기능을 구현할 수도 있다.
+> - 매크로 커맨드는 커맨드를 확장해서 여러 개의 커맨드를 한 번에 호출할 수 있게 해 주는 가장 간편한 방법이다.
+> - 매크로 커맨드로도 작업 취소 기능을 구현할 수 있다.
+> - 프로그래밍을 하다 보면 요청을 스스로 처리하는 '스마트'커맨드 객체를 사용하는 경우도 종종 있다.
+> - 커맨드 패턴을 활용해서 로그 및 트랜잭션 시스템을 구현할 수 있다.
