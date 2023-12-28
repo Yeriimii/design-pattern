@@ -2,12 +2,15 @@
 
 --- 
 
-> 1. [전략 패턴](#Chapter01---전략 패턴(strategy-pattern))
-> 1. [옵저버 패턴](#Chapter02---옵저버-패턴(observer-pattern))
-> 1. [데코레이터 패턴](#Chapter03---데코레이터-패턴(decorator-pattern))
-> 1. [팩토리 패턴](#Chapter04---팩토리-패턴(factory-pattern))
-> 1. [싱글턴 패턴](#Chapter05---싱글턴-패턴(singleton-pattern))
-> 1. [커맨드 패턴](#Chapter06---커맨드-패턴(command-pattern))
+> 1. [전략 패턴](#chapter01---전략-패턴strategy-pattern)
+> 1. [옵저버 패턴](#chapter02---옵저버-패턴observer-pattern)
+> 1. [데코레이터 패턴](#chapter03---데코레이터-패턴decorator-pattern)
+> 1. [팩토리 패턴](#chapter04---팩토리-패턴factory-pattern)
+> 1. [싱글턴 패턴](#chapter05---싱글턴-패턴singleton-pattern)
+> 1. [커맨드 패턴](#chapter06---커맨드-패턴command-pattern)
+> 1. [어댑트 패턴과 퍼사드 패턴](#chapter07---어댑터-패턴과-퍼사드-패턴adapter-pattern--pacade-pattern)
+>   1. [어댑트 패턴](#어댑터-패턴adapter-pattern)
+>   1. [퍼사드 패턴](#퍼사드-패턴facade-pattern)
 
 ---
 
@@ -415,3 +418,110 @@ classDiagram
 > - 매크로 커맨드로도 작업 취소 기능을 구현할 수 있다.
 > - 프로그래밍을 하다 보면 요청을 스스로 처리하는 '스마트'커맨드 객체를 사용하는 경우도 종종 있다.
 > - 커맨드 패턴을 활용해서 로그 및 트랜잭션 시스템을 구현할 수 있다.
+
+---
+
+## Chapter07 - 어댑터 패턴과 퍼사드 패턴(adapter pattern & facade pattern)
+
+### 어댑터 패턴(adapter pattern)
+어댑터 패턴(Adapter Pattern)은 특정 클래스 인터페이스를 클라이언트에서 요구하는 다른 인터페이스로 변환한다.  
+인터페이스가 호환되지 않아 같이 쓸 수 없었던 클래스를 사용할 수 있게 도와준다.  
+
+#### 클라이언트에서 어탭터를 사용하는 방법
+1. 클라이언트에서 타깃 인터페이스로 메서드를 호출해서 어댑터에 요청을 보낸다.
+2. 어댑터는 어댑티(adaptee) 인터페이스로 그 요청을 어댑티에 관한 메서드 호출로 변환한다.
+3. 클라이언트는 호출 결과를 받긴 하지만 중간에 어댑터가 있다는 사실을 모른다.
+
+```mermaid
+---
+title: 객체 어댑터
+---
+classDiagram
+    Client --|> Target
+    Adapter ..|> Target: implements
+    Adapter --|> Adaptee
+    note for Adapter "어댑티를 새로 바뀐 인터페이스로 감쌀 때는 객체 구성(Composition)을 사용한다.
+    이런 접근법은 어댑티의 모든 서브클래스에 어댑터를 쓸 수 있다는 장점이 있다."
+    class Target {
+        <<interface>>
+        request()
+    }
+    class Adapter {
+        request()
+    }
+    class Adaptee {
+        specificRequest()
+    }
+```
+
+### 퍼사드 패턴(facade pattern)
+퍼사드 패턴(Facade Pattern)은 서브시스템에 있는 일련의 인터페이스를 통합 인터페이스로 묶어 준다.  
+또한 고수준 인터페이스도 정의하므로 서브시스템을 더 편리하게 사용할 수 있다.  
+
+```mermaid
+classDiagram
+    Client --|> Facade
+    SubSystem -- Facade
+```
+
+> 1. 디자인 원칙: **최소 지식 원칙(Principle of Least Knowledge)** - 진짜 절친에게만 이야기해야 한다.
+
+시스템을 디자인할 떄 어떤 객체든 그 객체와 상호작용을 하는 클래스의 개수와 상호작용 방식에 주의를 기울여야 한다는 뜻.  
+이 원칙을 잘 따르면 여러 클래스가 복잡하게 얽혀 있어서, 시스템의 한 부분을 변경했을 때 다른 부분까지 줄줄이 고쳐야 하는 상황을 미리 방지할 수 있다.  
+
+#### 친구를 만들지 않고 다른 객체에 영향력 행사하기
+> 친구를 만들지 않는 4개의 가이드 라인
+> 1. 객체 자체
+> 2. 메서드에 매개변수로 전달된 객체
+> 3. 메서드를 생성하거나 인스턴스를 만든 객체
+> 4. 객체에 속하는 구성 요소 (A Has a B)
+
+```java
+// 원칙을 따르지 않은 경우
+public float getTemp() {
+    Thermometer thermometer = station.getThermometer();
+    return thermometer.getTemperature();
+}
+```
+
+```java
+// 원칙을 따르는 경우: thermometer에 요청을 전달하는 메서드를 Station클래스에 추가
+public float getTemp() {
+    return station.getTemperature();
+}
+```
+
+```java
+/**
+ * 최소 지식 원칙을 따르면서 메서드를 호출하는 올바른 방법의 예
+ */
+public class Car {
+    Engine engine;
+    
+    public Car() {
+        // 엔진 초기화    
+    }
+
+  public void start(Key key) {
+        Doors doors = new Doors(); // 새로운 객체 생성
+        boolean authorized = key.turns(); // 매개변수로 전달된 객체의 메서드는 호출해도 된다.
+        if (authorized) {
+            engine.start(); // 이 객체의 구성 요소를 대상으로 메서드를 호출해도 된다.
+            updateDashboardDisplay(); // 이 객체의 구성 요소를 대상으로 메서드를 호출해도 된다.
+            doors.lock(); // 이 객체의 구성 요소를 대상으로 메서드를 호출해도 된다.
+        }
+  }
+  
+  public void updateDashboardDisplay() {
+        // 디스플레이 갱신
+  }
+}
+```
+`디미터의 법칙 == 최소 지식의 원칙` 이라고 할 수 있다.  
+하지만 어떤 원칙도 법칙이라고 할 수 없다. 모든 원칙은 상황에 따라서 적절하게 따라야 한다.  
+디자인마다 장단점(추상화 vs 속도, 공간 vs 시간 등)이 있다.  
+따라서 가이드라인과는 별개로 모든 요인을 살펴본 다음 원칙을 적용해야 한다.  
+
+#### 최소 지식의 원칙의 단점
+메서드 호출을 처리하는 래퍼(Wrapper) 클래스를 더 만들어야 할 수도 있다.  
+그러면 시스템이 복잡해지고, 개발 시간도 늘어나고, 성능도 떨어진다.
