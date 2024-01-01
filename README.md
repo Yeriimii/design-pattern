@@ -12,6 +12,9 @@
 >   1. [어댑트 패턴](#어댑터-패턴adapter-pattern)
 >   1. [퍼사드 패턴](#퍼사드-패턴facade-pattern)
 > 1. [템플릿 메서드 패턴](#chapter08---템플릿-메서드-패턴template-method-pattern)
+> 1. [반복자 패턴과 컴포지트 패턴](#chapter09---반복자-패턴과-컴포지트-패턴iterator-pattern--composite-pattern)
+>    1. [반복자 패턴](#반복자-패턴iterator-pattern)
+>    1. [컴포지트 패턴](#컴포지트-패턴composite-pattern)
 
 ---
 
@@ -605,3 +608,123 @@ abstract class AbstractClass {
 - 템플릿 메서드 패턴은 실전에서 자주 쓰이지만, 반드시 '교과서적인' 방식으로 적용되진 않는다.  
 - 전략 패턴과 템플릿 메서드 패턴은 모두 알고리즘을 캡슐화하는 패턴이지만, 전략 패턴은 구성을, 템플릿 메서드 패턴은 상속을 사용한다.
 - 팩토리 메서드 패턴은 **특화된** 템플릿 메서드 패턴이다.
+
+## Chapter09 - 반복자 패턴과 컴포지트 패턴(Iterator Pattern & Composite Pattern)
+
+### 반복자 패턴(Iterator Pattern)
+반복자 패턴(Iterator Pattern)은 컬렉션의 구현 방법을 노출하지 않으면서, 집합체 내의 모든 항목에 접근하는 방법을 제공한다.
+이 패턴을 사용하면 집합체 내에서 어떤 식으로 일이 처리되는지 전혀 몰라도 그 안에 들어있는 모든 항목을 대상으로 반복 작업을 수행할 수 있다.  
+
+#### 반복자 패턴 적용의 효과
+- 내부 구현 방법을 외부로 노출하지 않으면서 집합체에 있는 모든 항목에 일일이 접근할 수 있다.
+  - 컬렉션 객체 안에 들어있는 모든 항목에 접근하는 방식이 통일되어 있으면 종류에 관계없이 모든 집합체에 사용할 수 있는 다형적인 코드를 만들 수 있다.
+    - Iterator 객체만 있으면 메뉴 항목이 Array로 저장되어 있든 ArrayList로 저장되어 있든 신경 쓰지 않고 작업을 처리할 수 있다.
+- 모든 항목에 일일이 접근하는 작업을 컬렉션 객체가 아닌 반복자 객체가 책임진다는 장점이 있다.
+  - 집합체의 인터페이스와 구현이 간단해지고, 집합체는 반복 작업에서 손을 떼고 원래 자신이 할 일(객체 컬렉션 관리)에만 전념할 수 있다.
+```mermaid
+---
+title: java.util.Iterator 인터페이스와 반복자 패턴의 구조
+---
+classDiagram
+    class Aggregate {
+        <<interface>>
+        createIterator()*
+    }
+
+    class ConcreteAggregate {
+        createIterator()
+    }
+
+    class Client {
+    }
+
+    class Iterator {
+        <<interface>>
+        hasNext()*
+        next()*
+        remove()*
+    }
+
+    class ConcreteIterator {
+        hasNext()
+        next()
+        remove()
+    }
+    Aggregate <|.. ConcreteAggregate: implements
+    Client --|> Aggregate
+    Client --|> Iterator
+    ConcreteIterator <|-- ConcreteAggregate
+    Iterator <|.. ConcreteIterator: implements
+```
+
+> 1. 디자인 원칙: 어떤 클래스가 바뀌는 이유는 하나뿐이어야 한다.
+
+어떤 클래스에서 맡고 있는 모든 역할은 나중에 코드 변화를 불러올 수 있다.  
+역할이 2개 이상 있으면 바뀔 수 있는 부분이 2개 이상이 되는 것이다.
+예를 들어, 어느 클래스에서 **1) 집합체 관리** 와 **2)반복자 관리** 두 가지 역할을 한다면,  
+**컬렉션**이 어떤 이유로 바뀌면 그 클래스도 바뀌고, **반복자 관련 기능**이 바뀌어도 그 클래스가 바뀌어야 한다.   
+이 원칙에 따라 하나의 클래스는 하나의 역할만 맡아야 한다.  
+
+```mermaid
+---
+title: 반복자와 컬렉션 - Collection 인터페이스에서 Iterable 인터페이스를 구현한다는 사실을 잊지 말자
+---
+classDiagram
+    class Iterable {
+        <<interface>>
+        iterator()*
+        +forEach()
+        +spliterator()
+    }
+    
+    class Collection {
+        <<interface>>
+        add()*
+        addAll()*
+        ...()
+        iterator()*
+        ...()
+    }
+
+  Iterable <|-- Collection
+```
+
+### 컴포지트 패턴(Composite Pattern)
+컴포지트 패턴(Composite Pattern)은 객체를 트리구조로 구성해서 부분-전체 계층구조(part-whole hierarchy)를 구현한다.  
+컴포지트 패턴을 사용하면 클라이언트에서 개별 객체와 복합 객체를 똑같은 방법으로 다룰 수 있다.  
+
+* 부분-전체 계층구조 : 부분(메뉴 및 메뉴 항목)들이 계층을 이루고 있지만 모든 부분을 묶어서 전체로 다룰 수 있는 구조를 뜻한다.  
+
+#### 컴포지트 패턴의 효과
+* 객체의 구성과 개별 객체를 노드로 가지는 트리 형태의 객체 구조를 만들 수 있다.
+* 이런 복합 구조(composite structure)를 사용하면 복합 객체와 개별 객체를 대상으로 똑같은 작업을 적용할 수 있다.
+* 즉, 복합 객체와 개별 객체를 구분할 필요가 거의 없어진다.
+
+```mermaid
+classDiagram
+    class Client {
+    }
+    
+    class Component {
+        operation()*
+        add(Component)*
+        remove(Component)*
+        getChild(int)*
+    }
+    
+    class Leaf {
+        operation()
+    }
+    
+    class Composite {
+      add(Component)
+      remove(Component)
+      getChild(int)
+      operation()
+    }
+    
+    Client --|> Component
+    Component <|.. Leaf : implements
+    Component <|.. Composite : implements
+    Component <|-- Composite
+```
