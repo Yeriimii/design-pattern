@@ -15,6 +15,7 @@
 > 1. [반복자 패턴과 컴포지트 패턴](#chapter09---반복자-패턴과-컴포지트-패턴iterator-pattern--composite-pattern)
 >    1. [반복자 패턴](#반복자-패턴iterator-pattern)
 >    1. [컴포지트 패턴](#컴포지트-패턴composite-pattern)
+> 1. [상태 패턴](#chapter10---상태-패턴state-pattern)
 
 ---
 
@@ -728,3 +729,62 @@ classDiagram
     Component <|.. Composite : implements
     Component <|-- Composite
 ```
+
+## Chapter10 - 상태 패턴(State Pattern)
+상태 패턴(State Pattern)을 사용하면 객체의 내부 상태가 바뀜에 따라서 객체의 행동을 바꿀 수 있다.  
+마치 객체의 클래스가 바뀌는 것과 같은 결과를 얻을 수 있다.  
+
+```mermaid
+---
+title: 상태 패턴
+---
+classDiagram
+    note for Context "Context 클래스에는 여러 가지 내부 상태가 들어있을 수 있다."
+    note for Context "Context 내부의 request()가 호출되면 그 작업은 상태 객체에게 위임한다."
+    note for State "State 인터페이스는 모든 구상 상태의 공통 인터페이스를 정의한다."
+    Context --> State
+    State <|.. ConcreteStateA: implements
+    State <|.. ConcreteStateB: implements
+
+    class Context {
+        request()
+    }
+
+    class State {
+        <<abstract>>
+        handle()*
+    }
+
+    class ConcreteStateA {
+        handle()
+    }
+
+    class ConcreteStateB {
+        handle()
+    }
+```
+### [전략 패턴](#chapter01---전략-패턴strategy-pattern)과 다른점
+* 상태 패턴을 사용할 때는 상태 객체에 일련의 행동이 캡슐화된다.
+* 상황에 따라 Context 객체에서 여러 상태 객체 중 한 객체에게 모든 행동을 맡기게 된다.
+* 그 결과로 Context 객체의 행동도 자연스럽게 바뀐다.
+* 이 때, 클라이언트는 상태 객체를 몰라도 된다.
+
+* 전략 패턴은 일반적으로 클라이언트가 Context 객체에게 어떤 전략 객체를 사용할지를 지정해 준다.
+* 전략 패턴은 주로 실행 시에 전략 객체를 변경할 수 있는 유연성을 제공하는 용도로 쓰인다.
+* 1장에서는 오리의 날아다니는 방식을 설정할 때 사용했다.
+
+* 일반적으로 전략 패턴은 서브클래스를 만드는 방법을 대신해서 유연성을 극대화하는 용도로 쓰인다.
+  * 상속이 아닌 구성을 사용해서 행동을 정의하는 객체를 유연하게 바꿀 수 있다.
+* Context 객체에 수많은 조건문을 넣는 대신에 상태 패턴을 사용한다고 생각하면 된다.
+
+### 핵심 정리
+* 상태 패턴을 사용하면 내부 상태를 바탕으로 여러 가지 서로 다른 행동을 사용할 수 있다.
+* 상태 패턴을 사용하면 프로시저형 상태 기계를 쓸 때와는 달리 각 상태를 클래스로 표현한다.
+* Context 객체는 현재 상태에게 행동을 위임한다.
+* 각 상태를 클래스로 캡슐화해서 나중에 변경해야 하는 내용을 국지화 할 수 있다.
+* 상태 패턴과 전략 패턴의 클래스 다이어그램은 똑같지만 그 용도는 다르다.
+* 전략 패턴에서 Context 클래스를 만들 때 행동과 알고리즘을 설정한다.
+* 상태 패턴을 사용하면 Context 내부 상태가 바뀜에 따라 객체가 알아서 행동을 바꿀 수 있도록 할 수 있다.
+* 상태 전환은 State 클래스로 제어할 수도 있고, Context 클래스로 제어할 수도 있다.
+* 상태 패턴을 쓰면 디자인에 필요한 클래스의 개수가 늘어난다.
+* State 클래스를 여러 Context 객체의 인스턴스에서 공유하도록 정적 클래스로 디자인할 수도 있다.
